@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
@@ -48,8 +50,7 @@ public class Quiz {
 
   private Integer durationMinutes;
 
-  @Builder.Default
-  private Double totalPoints = 100.0;
+  @Builder.Default private Double totalPoints = 100.0;
 
   @Builder.Default
   @Type(JsonType.class)
@@ -61,12 +62,13 @@ public class Quiz {
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> stats = new HashMap<>();
 
-  @Builder.Default
-  private Boolean isPublished = false;
+  private String documentUrl;
+
+  @Builder.Default private Boolean isPublished = false;
 
   private Timestamp deletedAt;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  @CreationTimestamp private LocalDateTime createdAt;
+  @CreationTimestamp private LocalDateTime updatedAt;
 
   @ManyToOne
   @JoinColumn(name = "class_id")

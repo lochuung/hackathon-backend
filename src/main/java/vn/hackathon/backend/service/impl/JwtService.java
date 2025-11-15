@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -154,6 +155,13 @@ public class JwtService {
   }
 
   public UUID getUserId(JwtAuthenticationToken authentication) {
+    String userIdStr = (String) authentication.getTokenAttributes().get("userId");
+    return UUID.fromString(userIdStr);
+  }
+
+  public UUID getUserId() {
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
     String userIdStr = (String) authentication.getTokenAttributes().get("userId");
     return UUID.fromString(userIdStr);
   }

@@ -1,7 +1,6 @@
 package vn.hackathon.backend.service.impl;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,8 +78,8 @@ public class DocumentServiceImpl implements DocumentService {
             .fileType(fileType)
             .fileUrl(fileUrl)
             .isActive(true)
-            .createdAt(Timestamp.from(Instant.now()))
-            .updatedAt(Timestamp.from(Instant.now()))
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
             .build();
 
     Document savedDocument = documentRepository.save(document);
@@ -96,4 +95,3 @@ public class DocumentServiceImpl implements DocumentService {
     return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
   }
 }
-

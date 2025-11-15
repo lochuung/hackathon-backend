@@ -1,10 +1,9 @@
 package vn.hackathon.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
 
 @Data
 @Setter
@@ -23,6 +22,6 @@ public class DocumentDto {
   private String fileUrl;
   private String extractedText;
   private Boolean isActive;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

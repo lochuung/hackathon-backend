@@ -1,7 +1,7 @@
 package vn.hackathon.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -24,6 +24,6 @@ public class ClassDto {
   private UserDto teacher;
   private List<UserDto> students;
   private Boolean isActive;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

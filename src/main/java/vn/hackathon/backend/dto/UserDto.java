@@ -1,7 +1,7 @@
 package vn.hackathon.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Data
 @Setter
@@ -22,6 +23,6 @@ public class UserDto {
   private String email;
   private String fullName;
   private String role;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  @CreationTimestamp private LocalDateTime createdAt;
+  @CreationTimestamp private LocalDateTime updatedAt;
 }

@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,20 +41,21 @@ public class User implements UserDetails {
 
   private String fullName;
 
+  private String studentId;
+
   @Builder.Default
   @Column(columnDefinition = "varchar(50)")
   private String role = "student";
 
-  @Builder.Default
-  private Boolean isEnabled = true;
+  @Builder.Default private Boolean isEnabled = true;
 
   @Builder.Default
   @Type(JsonType.class)
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> metadata = new HashMap<>();
 
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  @CreationTimestamp private LocalDateTime createdAt;
+  @CreationTimestamp private LocalDateTime updatedAt;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,7 +1,6 @@
 package vn.hackathon.backend.service;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -35,36 +34,48 @@ public class CreateTestDataService {
             .role(RoleContants.TEACHER)
             .build();
 
-    User student =
+    User student1 =
         User.builder()
-            .fullName("Toan Cho Dien")
+            .studentId("22110179")
+            .fullName("Nguyen Van A")
             .password("$2a$12$y7C/7rd9SuijqfGT2GXw2uQQITG6TU5roffomE1aSwRqur5M/maFS")
             .email("thanhnoobs@gmail.com")
             .role(RoleContants.STUDENT)
             .build();
 
+    User student2 =
+        User.builder()
+            .studentId("22110111")
+            .fullName("Student Test")
+            .password("$2a$12$y7C/7rd9SuijqfGT2GXw2uQQITG6TU5roffomE1aSwRqur5M/maFS") // password:
+            // password123
+            .email("abc@gmail.com")
+            .role(RoleContants.STUDENT)
+            .build();
+
     userRepository.save(teacher);
-    userRepository.save(student);
+    userRepository.save(student1);
+    userRepository.save(student2);
 
     log.info("Created testing auth data successfully.");
-    createTestingClassData(teacher, student);
+    createTestingClassData(teacher, student1, student2);
   }
 
   @Transactional
-  protected void createTestingClassData(User teacher, User student) {
+  protected void createTestingClassData(User teacher, User student1, User student2) {
     if (classRepository.count() > 0) {
       log.info("Testing class data already exists, skipping creation.");
       return;
     }
 
-    Timestamp now = Timestamp.from(Instant.now());
+    LocalDateTime now = LocalDateTime.now();
 
     // VD mock 1 lớp có 1 student
     ClassEntity javaClass =
         ClassEntity.builder()
-            .name("Lop Java Can Ban")
+            .name("Lập trình di động")
             .createdBy(teacher)
-            .studentIds(List.of(student.getId()))
+            .studentIds(List.of(student1.getId(), student2.getId()))
             .metadata(
                 Map.of(
                     "description", "Lop hoc Java cho nguoi moi bat dau",
@@ -80,9 +91,9 @@ public class CreateTestDataService {
     // Mock thêm 1 lớp khác
     ClassEntity springBootClass =
         ClassEntity.builder()
-            .name("Spring Boot Nang Cao")
+            .name("Hệ quản trị cơ sở dữ liệu")
             .createdBy(teacher)
-            .studentIds(List.of(student.getId()))
+            .studentIds(List.of(student1.getId()))
             .metadata(
                 Map.of(
                     "description", "Khoa hoc Spring Boot nang cao",

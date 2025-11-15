@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
 @Entity
@@ -53,6 +55,6 @@ public class ClassEnrollment {
   @Column(columnDefinition = "jsonb")
   private Map<String, Object> stats = new HashMap<>();
 
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  @CreationTimestamp private LocalDateTime createdAt;
+  @CreationTimestamp private LocalDateTime updatedAt;
 }

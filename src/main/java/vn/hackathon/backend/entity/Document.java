@@ -8,12 +8,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "documents")
@@ -52,6 +54,6 @@ public class Document {
   @Builder.Default private Boolean isActive = true;
 
   private Timestamp deletedAt;
-  private Timestamp createdAt;
-  private Timestamp updatedAt;
+  @CreationTimestamp private LocalDateTime createdAt;
+  @CreationTimestamp private LocalDateTime updatedAt;
 }
