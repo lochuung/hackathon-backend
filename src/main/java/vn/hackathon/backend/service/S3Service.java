@@ -41,6 +41,7 @@ public class S3Service {
               .key(key)
               .contentType(file.getContentType())
               .contentLength(file.getSize())
+              .acl("public-read")
               .build();
 
       PutObjectResponse response =
