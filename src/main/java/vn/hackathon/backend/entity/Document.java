@@ -34,7 +34,7 @@ public class Document {
   @JoinColumn(name = "uploaded_by")
   private User uploadedBy;
 
-  @Column(nullable = false, length = 255)
+  @Column(nullable = false)
   private String fileName;
 
   @Column(nullable = false, columnDefinition = "text")
@@ -49,8 +49,7 @@ public class Document {
   @Column(columnDefinition = "text")
   private String extractedText;
 
-  @Builder.Default
-  private Boolean isActive = true;
+  @Builder.Default private Boolean isActive = true;
 
   private Timestamp deletedAt;
   private Timestamp createdAt;

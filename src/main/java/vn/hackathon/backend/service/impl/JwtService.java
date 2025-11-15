@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import vn.hackathon.backend.entity.User;
 
@@ -169,6 +171,11 @@ public class JwtService {
             .claim("scope", authorities);
 
     return claimsSet.build();
+  }
+
+  public UUID getUserId(JwtAuthenticationToken authentication) {
+    String userIdStr = (String) authentication.getTokenAttributes().get("userId");
+    return UUID.fromString(userIdStr);
   }
 
   /**

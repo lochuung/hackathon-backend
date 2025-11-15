@@ -2,9 +2,8 @@ package vn.hackathon.backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.hackathon.backend.dto.auth.AuthenticationRequest;
 import vn.hackathon.backend.dto.auth.AuthenticationResponse;
@@ -19,6 +18,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   /**
    * Authenticates a user and generates access and refresh tokens.
@@ -36,7 +36,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     BadRequestException.message(
                         "Không tìm thấy người dùng: " + loginRequest.getEmail()));
 
-    authenticateUser(user.getEmail(), loginRequest.getPassword());
+    if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+      throw BadRequestException.message("Sai tên đăng nhập hoặc mật khẩu");
+    }
 
     String accessToken = jwtService.generateAccessToken(user);
 
@@ -57,10 +59,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
    */
   private void authenticateUser(String username, String password) {
     try {
-      Authentication authentication =
-          authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(username, password));
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(username, password));
 
     } catch (AuthenticationException ex) {
       String message = authenticationExceptionMessage(ex);
