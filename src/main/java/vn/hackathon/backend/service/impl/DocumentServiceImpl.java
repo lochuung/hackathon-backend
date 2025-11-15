@@ -17,6 +17,7 @@ import vn.hackathon.backend.entity.Document;
 import vn.hackathon.backend.entity.User;
 import vn.hackathon.backend.exception.BadRequestException;
 import vn.hackathon.backend.exception.NotFoundException;
+import vn.hackathon.backend.mapper.DocumentMapper;
 import vn.hackathon.backend.repository.ClassRepository;
 import vn.hackathon.backend.repository.DocumentRepository;
 import vn.hackathon.backend.repository.UserRepository;
@@ -33,6 +34,7 @@ public class DocumentServiceImpl implements DocumentService {
   private final UserRepository userRepository;
   private final S3Service s3Service;
   private final JwtService jwtService;
+  private final DocumentMapper documentMapper;
 
   @Transactional
   public DocumentDto uploadDocument(MultipartFile file, UUID classId) {
@@ -84,7 +86,7 @@ public class DocumentServiceImpl implements DocumentService {
     Document savedDocument = documentRepository.save(document);
     log.info("Document saved successfully: {}", savedDocument.getId());
 
-    return toDto(savedDocument);
+    return documentMapper.toDto(savedDocument);
   }
 
   private String getFileType(String fileName) {
@@ -93,20 +95,5 @@ public class DocumentServiceImpl implements DocumentService {
     }
     return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
   }
-
-  private DocumentDto toDto(Document document) {
-    return DocumentDto.builder()
-        .id(document.getId())
-        .classId(document.getClassEntity() != null ? document.getClassEntity().getId() : null)
-        .uploadedBy(document.getUploadedBy() != null ? document.getUploadedBy().getId() : null)
-        .fileName(document.getFileName())
-        .filePath(document.getFilePath())
-        .fileType(document.getFileType())
-        .fileUrl(document.getFileUrl())
-        .extractedText(document.getExtractedText())
-        .isActive(document.getIsActive())
-        .createdAt(document.getCreatedAt())
-        .updatedAt(document.getUpdatedAt())
-        .build();
-  }
 }
+
