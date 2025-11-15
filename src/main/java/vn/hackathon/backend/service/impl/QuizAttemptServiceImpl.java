@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hackathon.backend.domain.ClassDomainService;
+import vn.hackathon.backend.dto.quiz.QuizAttemptDto;
 import vn.hackathon.backend.dto.quiz.QuizAttemptStartResponse;
 import vn.hackathon.backend.dto.quiz.QuizAttemptSubmitResponse;
 import vn.hackathon.backend.dto.quiz.QuizPipelineResponse;
@@ -334,6 +335,7 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
       Map<String, Object> questionMap = (Map<String, Object>) q;
 
       String questionId = (String) questionMap.get("id");
+      @SuppressWarnings("unchecked")
       List<Object> isCorrectAnswer = (List<Object>) questionMap.get("options");
       Integer userAnswer = userAnswers.get(questionId);
       if (userAnswer == null) {
@@ -404,6 +406,58 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
     }
 
     return sb.toString().trim();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<QuizAttemptDto> getQuizAttemptsByQuizAndUser(UUID quizId, UUID userId) {
+    log.info("Getting quiz attempts for quizId={}, userId={}", quizId, userId);
+
+    // Validate quiz exists
+    Quiz quiz =
+        quizRepository
+            .findById(quizId)
+            .orElseThrow(() -> new NotFoundException("Quiz not found with id: " + quizId));
+
+    // Validate user has access to the quiz's class
+    if (!classDomainService.isParticipantInClass(quiz.getClassEntity().getId(), userId)) {
+      throw BadRequestException.message("User is not enrolled in the class of this quiz");
+    }
+
+    List<QuizAttempt> attempts = quizAttemptRepository.findAllByQuizIdAndUserId(quizId, userId);
+    log.info("Found {} attempts for quizId={}, userId={}", attempts.size(), quizId, userId);
+
+    Instant now = Instant.now();
+    return attempts.stream()
+        .map(
+            attempt -> {
+              boolean isCompleted = attempt.getEndTime() != null;
+              boolean isExpired =
+                  attempt.getExpiresAt() != null
+                      && attempt.getExpiresAt().toInstant().isBefore(now);
+
+              return QuizAttemptDto.builder()
+                  .id(attempt.getId())
+                  .quizId(attempt.getQuiz().getId())
+                  .quizTitle(attempt.getQuiz().getTitle())
+                  .userId(attempt.getUser().getId())
+                  .userName(attempt.getUser().getEmail())
+                  .startTime(attempt.getStartTime().toInstant())
+                  .endTime(attempt.getEndTime() != null ? attempt.getEndTime().toInstant() : null)
+                  .expiresAt(
+                      attempt.getExpiresAt() != null ? attempt.getExpiresAt().toInstant() : null)
+                  .score(attempt.getScore())
+                  .totalPoints(attempt.getQuiz().getTotalPoints())
+                  .totalQuestions(
+                      attempt.getQuiz().getQuestions() != null
+                          ? attempt.getQuiz().getQuestions().size()
+                          : 0)
+                  .skillsPoint(attempt.getSkillsPoint())
+                  .isCompleted(isCompleted)
+                  .isExpired(isExpired)
+                  .build();
+            })
+        .toList();
   }
 
   private record ScoreResult(

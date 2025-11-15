@@ -3,6 +3,7 @@ package vn.hackathon.backend.service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import vn.hackathon.backend.dto.quiz.QuizAttemptDto;
 import vn.hackathon.backend.dto.quiz.QuizAttemptStartResponse;
 import vn.hackathon.backend.dto.quiz.QuizAttemptSubmitResponse;
 import vn.hackathon.backend.dto.quiz.QuizPipelineResponse;
@@ -40,4 +41,13 @@ public interface QuizAttemptService {
    * @return list of quiz pipeline responses
    */
   List<QuizPipelineResponse> getQuizResultsPipeline();
+
+  /**
+   * Get all quiz attempts for a specific quiz and user
+   *
+   * @param quizId the quiz ID
+   * @param userId the user ID
+   * @return list of quiz attempts
+   */
+  List<QuizAttemptDto> getQuizAttemptsByQuizAndUser(UUID quizId, UUID userId);
 }

@@ -15,4 +15,9 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, UUID> 
   List<QuizAttempt> findActiveAttemptsByQuizAndUser(UUID quizId, UUID userId);
 
   List<QuizAttempt> findAllByEndTimeBetween(Timestamp from, Timestamp to);
+
+  @Query(
+      "SELECT qa FROM QuizAttempt qa WHERE qa.quiz.id = :quizId AND qa.user.id = :userId "
+          + "ORDER BY qa.createdAt DESC")
+  List<QuizAttempt> findAllByQuizIdAndUserId(UUID quizId, UUID userId);
 }
