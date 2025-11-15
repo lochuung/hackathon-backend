@@ -3,6 +3,7 @@ package vn.hackathon.backend.service.impl;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.hackathon.backend.domain.ClassDomainService;
 import vn.hackathon.backend.dto.quiz.QuizAttemptStartResponse;
 import vn.hackathon.backend.dto.quiz.QuizAttemptSubmitResponse;
+import vn.hackathon.backend.dto.quiz.QuizPipelineResponse;
 import vn.hackathon.backend.entity.Quiz;
 import vn.hackathon.backend.entity.QuizAttempt;
 import vn.hackathon.backend.entity.User;
@@ -198,6 +200,78 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
         .build();
   }
 
+  @Override
+  public List<QuizPipelineResponse> getQuizResultsPipeline() {
+    Instant now = Instant.now();
+    // yesterday's date at 00:00
+    // today's date at 00:00
+    Instant startOfToday = now.truncatedTo(ChronoUnit.DAYS);
+    Instant startOfYesterday = startOfToday.minus(1, ChronoUnit.DAYS);
+    // find all quiz attempts from startOfYesterday to startOfToday
+    List<QuizAttempt> attempts =
+        quizAttemptRepository.findAllByEndTimeBetween(
+            Timestamp.from(startOfYesterday), Timestamp.from(startOfToday));
+
+    log.info(
+        "Found {} quiz attempts between {} and {}",
+        attempts.size(),
+        startOfYesterday,
+        startOfToday);
+
+    List<QuizPipelineResponse> results = new ArrayList<>();
+
+    for (QuizAttempt attempt : attempts) {
+      // Skip attempts without end time (not completed)
+      if (attempt.getEndTime() == null) {
+        continue;
+      }
+
+      User user = attempt.getUser();
+      Quiz quiz = attempt.getQuiz();
+
+      // Calculate total questions and right answers
+      ScoreResult scoreResult =
+          calculateScore(quiz, convertAnswersToIntegerMap(attempt.getAnswers()));
+
+      Map<String, Integer> detail = new HashMap<>();
+      for (Map.Entry<String, Object> entry : attempt.getSkillsPoint().entrySet()) {
+        if (entry.getValue() instanceof Number) {
+          detail.put(entry.getKey(), ((Number) entry.getValue()).intValue());
+        }
+      }
+      // Build response
+      QuizPipelineResponse response =
+          QuizPipelineResponse.builder()
+              .studentId(
+                  user.getStudentId() != null ? user.getStudentId() : user.getId().toString())
+              .subjectTitle(quiz.getTitle())
+              .totalQuestion(scoreResult.totalQuestions)
+              .testTimestamp(attempt.getEndTime().toInstant())
+              .totalRightAnswer(scoreResult.correctAnswers)
+              .detail(detail)
+              .build();
+
+      results.add(response);
+    }
+
+    log.info("Returning {} quiz pipeline results", results.size());
+    return results;
+  }
+
+  private Map<String, Integer> convertAnswersToIntegerMap(Map<String, Object> answers) {
+    Map<String, Integer> result = new HashMap<>();
+    if (answers != null) {
+      for (Map.Entry<String, Object> entry : answers.entrySet()) {
+        if (entry.getValue() instanceof Integer) {
+          result.put(entry.getKey(), (Integer) entry.getValue());
+        } else if (entry.getValue() instanceof Number) {
+          result.put(entry.getKey(), ((Number) entry.getValue()).intValue());
+        }
+      }
+    }
+    return result;
+  }
+
   private QuizAttemptStartResponse buildStartResponse(QuizAttempt attempt, Quiz quiz) {
     List<QuizAttemptStartResponse.QuestionDto> questions = new ArrayList<>();
 
@@ -260,13 +334,25 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
       Map<String, Object> questionMap = (Map<String, Object>) q;
 
       String questionId = (String) questionMap.get("id");
-      Integer correctAnswerIndex = (Integer) questionMap.get("correctAnswer");
+      List<Object> isCorrectAnswer = (List<Object>) questionMap.get("options");
+      Integer userAnswer = userAnswers.get(questionId);
+      if (userAnswer == null) {
+        userAnswer = -1; // treat unanswered as -1
+      }
+      int correctAnswerIndex = -1;
+      for (Object optObj : isCorrectAnswer) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> optMap = (Map<String, Object>) optObj;
+        Integer isCorrect = (Integer) optMap.get("is_correct_answer");
+        if (Integer.valueOf(1).equals(isCorrect)) {
+          correctAnswerIndex = isCorrectAnswer.indexOf(optObj); // get index of the correct answer
+          break;
+        }
+      }
+      boolean isCorrect = userAnswer == correctAnswerIndex;
 
       @SuppressWarnings("unchecked")
       List<String> skills = (List<String>) questionMap.get("skills");
-
-      Integer userAnswer = userAnswers.get(questionId);
-      boolean isCorrect = userAnswer != null && userAnswer.equals(correctAnswerIndex);
 
       if (isCorrect) {
         correctAnswers++;
@@ -301,8 +387,23 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
   }
 
   private String formatDuration(long seconds) {
-    long minutes = seconds / 60;
-    return minutes + " phút";
+    long hours = seconds / 3600;
+    long minutes = (seconds % 3600) / 60;
+    long secs = seconds % 60;
+
+    StringBuilder sb = new StringBuilder();
+
+    if (hours > 0) {
+      sb.append(hours).append(" giờ ");
+    }
+    if (minutes > 0) {
+      sb.append(minutes).append(" phút ");
+    }
+    if (secs > 0 || sb.isEmpty()) { // nếu toàn bộ là 0
+      sb.append(secs).append(" giây");
+    }
+
+    return sb.toString().trim();
   }
 
   private record ScoreResult(

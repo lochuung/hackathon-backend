@@ -1,9 +1,11 @@
 package vn.hackathon.backend.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import vn.hackathon.backend.dto.quiz.QuizAttemptStartResponse;
 import vn.hackathon.backend.dto.quiz.QuizAttemptSubmitResponse;
+import vn.hackathon.backend.dto.quiz.QuizPipelineResponse;
 
 public interface QuizAttemptService {
   /**
@@ -31,4 +33,11 @@ public interface QuizAttemptService {
    * @return the submit response
    */
   QuizAttemptSubmitResponse submitQuizAttempt(UUID attemptId, Map<String, Integer> answers);
+
+  /**
+   * Get quiz results pipeline for yesterday's completed attempts
+   *
+   * @return list of quiz pipeline responses
+   */
+  List<QuizPipelineResponse> getQuizResultsPipeline();
 }

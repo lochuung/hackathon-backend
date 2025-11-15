@@ -1,5 +1,6 @@
 package vn.hackathon.backend.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, UUID> 
       "SELECT qa FROM QuizAttempt qa WHERE qa.quiz.id = :quizId AND qa.user.id = :userId "
           + "AND qa.endTime IS NULL AND qa.expiresAt > CURRENT_TIMESTAMP")
   List<QuizAttempt> findActiveAttemptsByQuizAndUser(UUID quizId, UUID userId);
+
+  List<QuizAttempt> findAllByEndTimeBetween(Timestamp from, Timestamp to);
 }
