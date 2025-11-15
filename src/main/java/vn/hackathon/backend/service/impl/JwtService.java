@@ -25,11 +25,8 @@ public class JwtService {
   private final JwtEncoder jwtEncoder;
   private final JwtDecoder jwtDecoder;
 
-  @Value("${application.jwt.accessToken.expiration:3600}")
+  @Value("${application.jwt.accessToken.expiration:86400}")
   private int accessTokenExpirationTime;
-
-  @Value("${application.jwt.refreshToken.expiration:86400}")
-  private int refreshTokenExpirationTime;
 
   @Value("${application.url.backend:http://localhost:8080}")
   private String issuer;
@@ -50,23 +47,6 @@ public class JwtService {
   public String generateAccessToken(UserDetails userDetails) {
     return jwtEncoder
         .encode(JwtEncoderParameters.from(createClaims(userDetails, accessTokenExpirationTime)))
-        .getTokenValue();
-  }
-
-  /**
-   * Generates a signed refresh JWT for the given user.
-   *
-   * <p>The token contains the service's standard claims (issuer, subject, userId, email, roles,
-   * etc.) and is issued with the configured refresh token lifetime.
-   *
-   * @param userDetails the authenticated user's details (must be a User instance)
-   * @return the encoded JWT refresh token string
-   * @throws IllegalArgumentException if {@code userDetails} is null, not a supported User
-   *     implementation, or if the configured refresh token expiration is not positive
-   */
-  public String generateRefreshToken(UserDetails userDetails) {
-    return jwtEncoder
-        .encode(JwtEncoderParameters.from(createClaims(userDetails, refreshTokenExpirationTime)))
         .getTokenValue();
   }
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hackathon.backend.dto.ApiResponse;
 import vn.hackathon.backend.dto.DocumentDto;
-import vn.hackathon.backend.service.DocumentService;
+import vn.hackathon.backend.service.impl.DocumentServiceImpl;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -18,7 +18,7 @@ import vn.hackathon.backend.service.DocumentService;
 @Slf4j
 public class DocumentController {
 
-  private final DocumentService documentService;
+  private final DocumentServiceImpl documentService;
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
