@@ -66,7 +66,7 @@ app:
     apiKey: ${APP_API_KEY:your-api-key}
   quiz:
     generation:
-      url: http://172.31.99.3:8000
+      url: ${APP_QUIZ_GENERATION_URL:http://172.31.99.3:8000}
 
 logging:
   level:
