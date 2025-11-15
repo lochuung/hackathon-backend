@@ -57,7 +57,6 @@ public class S3Config {
         .region(Region.of(region))
         .serviceConfiguration(s3Cfg())
         .credentialsProvider(creds())
-        // Avoid sending optional checksum headers that some S3-compatible stores may not accept
         .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
         .overrideConfiguration(
             ClientOverrideConfiguration.builder()
