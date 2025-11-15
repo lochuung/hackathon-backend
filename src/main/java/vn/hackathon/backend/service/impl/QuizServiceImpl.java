@@ -3,13 +3,13 @@ package vn.hackathon.backend.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import vn.hackathon.backend.domain.ClassDomainService;
 import vn.hackathon.backend.dto.quiz.QuizCreateRequest;
 import vn.hackathon.backend.dto.quiz.QuizDto;
@@ -23,6 +23,7 @@ import vn.hackathon.backend.mapper.QuizMapper;
 import vn.hackathon.backend.repository.ClassRepository;
 import vn.hackathon.backend.repository.QuizRepository;
 import vn.hackathon.backend.repository.UserRepository;
+import vn.hackathon.backend.service.AIService;
 import vn.hackathon.backend.service.QuizService;
 import vn.hackathon.backend.utils.QuestionValidator;
 
@@ -37,6 +38,7 @@ public class QuizServiceImpl implements QuizService {
   private final QuizMapper quizMapper;
   private final ClassDomainService classDomainService;
   private final JwtService jwtService;
+  private final AIService aIService;
 
   @Override
   @Transactional
@@ -65,23 +67,7 @@ public class QuizServiceImpl implements QuizService {
     // Validate skills
     QuestionValidator.validateSkills(quizDto.getSkills());
 
-    // TODO: Send to AI service to generate questions
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
-    executorService.submit(
-        () -> {
-          // Simulate AI question generation
-          log.info("Generating questions for quiz '{}' using AI service...", quizDto.getTitle());
-          try {
-            Thread.sleep(2000); // Simulate delay
-            log.info("Questions generated for quiz '{}'", quizDto.getTitle());
-          } catch (InterruptedException e) {
-            log.error(
-                "Error generating questions for quiz '{}': {}", quizDto.getTitle(), e.getMessage());
-          }
-        });
-    executorService.shutdown();
-
-    // Create quiz entity
+    // Create quiz entity first to get the ID
     Quiz quiz =
         Quiz.builder()
             .title(quizDto.getTitle())
@@ -98,6 +84,13 @@ public class QuizServiceImpl implements QuizService {
 
     Quiz savedQuiz = quizRepository.save(quiz);
     log.info("Quiz created successfully with ID: {}", savedQuiz.getId());
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            aIService.callAI(savedQuiz);
+          }
+        });
 
     return quizMapper.toDto(savedQuiz);
   }

@@ -243,6 +243,8 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
       // Build response
       QuizPipelineResponse response =
           QuizPipelineResponse.builder()
+              .quizId(quiz.getId().toString())
+              .attemptId(attempt.getId().toString())
               .studentId(
                   user.getStudentId() != null ? user.getStudentId() : user.getId().toString())
               .subjectTitle(quiz.getTitle())

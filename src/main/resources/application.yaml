@@ -64,6 +64,9 @@ aws:
 app:
   pipeline:
     apiKey: ${APP_API_KEY:your-api-key}
+  quiz:
+    generation:
+      url: http://172.31.99.3:8000
 
 logging:
   level:

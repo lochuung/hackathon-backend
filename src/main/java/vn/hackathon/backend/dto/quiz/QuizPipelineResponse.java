@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuizPipelineResponse {
+  @JsonProperty("quiz_id")
+  private String quizId;
+
+  @JsonProperty("attempt_id")
+  private String attemptId;
 
   @JsonProperty("student_id")
   private String studentId;
